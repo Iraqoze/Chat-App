@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#FFFFFFFF</color>
+    <color name="primary">#FC0C0C0C</color>
+    <color name="secondary">#B70C0C0C</color>
+    <color name="bgcolor">#E11397D8</color>
+    <color name="bgcolorSecondary">#C11397D8</color>
+    <color name="whiteSecondary">#BAF1EEEE</color>
+    <color name="onlineStatus">#39DF40</color>
+</resources>

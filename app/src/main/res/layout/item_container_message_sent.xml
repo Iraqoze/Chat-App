@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginTop="@dimen/_8sdp"
+    android:padding="@dimen/_4sdp">
+    <TextView
+        android:id="@+id/textMessageSent"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+         android:background="@drawable/background_message_sent"
+        android:padding="@dimen/_10sdp"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_13sdp"
+        android:text="Hey what's up"
+        app:layout_constraintEnd_toStartOf="@id/imageProfileSent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.7"/>
+    <com.makeramen.roundedimageview.RoundedImageView
+        android:id="@+id/imageProfileSent"
+        android:layout_width="@dimen/_24sdp"
+        android:layout_height="@dimen/_24sdp"
+        android:layout_marginTop="@dimen/_18sdp"
+        android:layout_marginRight="@dimen/_4sdp"
+        android:background="@drawable/background"
+        android:scaleType="centerCrop"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:riv_oval="true" />
+    <TextView
+        android:id="@+id/textDateSent"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/secondary"
+        android:text="12:00pm"
+        android:textSize="@dimen/_10sdp"
+        app:layout_constraintEnd_toEndOf="@id/textMessageSent"
+        app:layout_constraintTop_toBottomOf="@id/textMessageSent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
