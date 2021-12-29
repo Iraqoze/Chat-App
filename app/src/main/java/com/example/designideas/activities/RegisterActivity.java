@@ -18,6 +18,10 @@ import android.widget.Toast;
 import com.example.designideas.databinding.ActivityRegisterBinding;
 import com.example.designideas.utilities.Constants;
 import com.example.designideas.utilities.PreferenceManager;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.ByteArrayOutputStream;
@@ -29,6 +33,7 @@ public class RegisterActivity extends AppCompatActivity {
     private ActivityRegisterBinding binding;
     private PreferenceManager preferenceManager;
     private String encodeImage;
+    private String userId;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,31 +70,40 @@ public class RegisterActivity extends AppCompatActivity {
 
     }
     private void register(){
-isLoading(true);
-        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-        HashMap<String, Object> user= new HashMap<>();
-        user.put(Constants.KEY_NAME, binding.fullnames.getText().toString());
-        user.put(Constants.KEY_EMAIL, binding.email.getText().toString().trim());
-        user.put(Constants.KEY_PASSWORD,binding.password.getText().toString());
-        user.put(Constants.KEY_IMAGE,encodeImage);
-        firestore.collection(Constants.KEY_COLLECTION_USERS)
-                .add(user).addOnSuccessListener(documentReference -> {
+        isLoading(true);
+
+        registerWithEmailAndPassword();
+        System.out.println("USER ID: "+userId);
+        if (userId!=null){
+            FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+            HashMap<String, Object> user= new HashMap<>();
+            user.put(Constants.KEY_NAME, binding.fullnames.getText().toString());
+            user.put(Constants.KEY_EMAIL, binding.email.getText().toString().trim());
+            user.put(Constants.KEY_PASSWORD,binding.password.getText().toString());
+            user.put(Constants.KEY_IMAGE,encodeImage);
+            user.put(Constants.KEY_MAUTH_ID,userId);
+            firestore.collection(Constants.KEY_COLLECTION_USERS)
+                    .add(user).addOnSuccessListener(documentReference -> {
+                isLoading(false);
+                preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN,true);
+                preferenceManager.putString(Constants.KEY_USER_ID,documentReference.getId());
+                preferenceManager.putString(Constants.KEY_MAUTH_ID,userId);
+                preferenceManager.putString(Constants.KEY_NAME,binding.fullnames.getText().toString());
+                preferenceManager.putString(Constants.KEY_EMAIL,binding.email.getText().toString().trim());
+                preferenceManager.putString(Constants.KEY_IMAGE,encodeImage);
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            }).addOnFailureListener(exception->{
+                isLoading(false);
+                Toast.makeText(getApplicationContext(), exception.getMessage(), Toast.LENGTH_SHORT).show();
+
+            });
+
+        }
+
         isLoading(false);
-        preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN,true);
-        preferenceManager.putString(Constants.KEY_USER_ID,documentReference.getId());
-        preferenceManager.putString(Constants.KEY_NAME,binding.fullnames.getText().toString());
-        preferenceManager.putString(Constants.KEY_EMAIL,binding.email.getText().toString().trim());
-        preferenceManager.putString(Constants.KEY_IMAGE,encodeImage);
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
-        }).addOnFailureListener(exception->{
-            isLoading(false);
-            Toast.makeText(getApplicationContext(), exception.getMessage(), Toast.LENGTH_SHORT).show();
-
-        });
-
 
     }
     private void isLoading(boolean bool){
@@ -133,6 +147,24 @@ isLoading(true);
             return false;
         }
         return true;
+    }
+
+    private void registerWithEmailAndPassword(){
+        FirebaseAuth mAuth= FirebaseAuth.getInstance();
+        mAuth.createUserWithEmailAndPassword(binding.email.getText().toString().trim(),binding.password.getText().toString())
+                .addOnCompleteListener(task -> {
+
+            if (task.isSuccessful()) {
+
+                FirebaseUser rUser = mAuth.getCurrentUser();
+                assert rUser != null;
+                userId = rUser.getUid();
+                return;
+            }
+            else{
+                Toast.makeText(getApplicationContext(), "Unable to register", Toast.LENGTH_SHORT).show();
+            }
+         });
     }
 
     private  String encodeImage(Bitmap bitmap){

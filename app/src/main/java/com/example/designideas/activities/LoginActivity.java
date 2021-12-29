@@ -1,6 +1,7 @@
 package com.example.designideas.activities;
 
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -15,6 +16,10 @@ import com.example.designideas.R;
 import com.example.designideas.databinding.ActivityLoginBinding;
 import com.example.designideas.utilities.Constants;
 import com.example.designideas.utilities.PreferenceManager;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -23,6 +28,7 @@ public class LoginActivity extends AppCompatActivity {
     Animation leftrightAnim,rightAnim;
     private ActivityLoginBinding binding;
     private PreferenceManager preferenceManager;
+    private String userId;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,31 +69,49 @@ public class LoginActivity extends AppCompatActivity {
 
     private void login() {
         isLoading(true);
-        FirebaseFirestore firestore=FirebaseFirestore.getInstance();
-    firestore.collection(Constants.KEY_COLLECTION_USERS)
-            .whereEqualTo(Constants.KEY_EMAIL,binding.email.getText().toString())
-            .whereEqualTo(Constants.KEY_PASSWORD,binding.password.getText().toString())
-            .get()
-            .addOnCompleteListener(task->{
-                isLoading(false);
-                if (task.isSuccessful() && task.getResult()!=null && task.getResult().getDocuments().size()>0){
-                    DocumentSnapshot documentSnapshot=task.getResult().getDocuments().get(0);
-                    preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN,true);
-                    preferenceManager.putString(Constants.KEY_USER_ID,documentSnapshot.getId());
-                    preferenceManager.putString(Constants.KEY_NAME,documentSnapshot.getString(Constants.KEY_NAME));
-                    preferenceManager.putString(Constants.KEY_EMAIL,documentSnapshot.getString(Constants.KEY_EMAIL));
-                    preferenceManager.putString(Constants.KEY_IMAGE,documentSnapshot.getString(Constants.KEY_IMAGE));
-                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                }
-                else{
-                    isLoading(false);
-                    Toast.makeText(getApplicationContext(), "Incorrect Username or Password", Toast.LENGTH_SHORT).show();
-                }
-            });
+        FirebaseAuth mAuth=FirebaseAuth.getInstance();
+        mAuth.signInWithEmailAndPassword(binding.email.getText().toString().trim(),binding.password.getText().toString())
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                       if (task.isSuccessful()){
+                           userId=mAuth.getCurrentUser().getUid();
+                           System.out.println("USER ID: "+userId);
+                           saveUserInfo(userId);
+                       }
+                       else{
+                           isLoading(false);
+                           Toast.makeText(getApplicationContext(), "Incorrect Username or Password", Toast.LENGTH_SHORT).show();
+                       }
+                    }
+                });
     }
-
+private void saveUserInfo(String userId){
+    if (userId!=null){
+        FirebaseFirestore firestore=FirebaseFirestore.getInstance();
+        firestore.collection(Constants.KEY_COLLECTION_USERS)
+                .whereEqualTo(Constants.KEY_MAUTH_ID,userId)
+                .get()
+                .addOnCompleteListener(task->{
+                    isLoading(false);
+                    if (task.isSuccessful() && task.getResult()!=null && task.getResult().getDocuments().size()>0){
+                        DocumentSnapshot documentSnapshot=task.getResult().getDocuments().get(0);
+                        preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN,true);
+                        preferenceManager.putString(Constants.KEY_USER_ID,documentSnapshot.getId());
+                        preferenceManager.putString(Constants.KEY_NAME,documentSnapshot.getString(Constants.KEY_NAME));
+                        preferenceManager.putString(Constants.KEY_EMAIL,documentSnapshot.getString(Constants.KEY_EMAIL));
+                        preferenceManager.putString(Constants.KEY_IMAGE,documentSnapshot.getString(Constants.KEY_IMAGE));
+                        preferenceManager.putString(Constants.KEY_MAUTH_ID,userId);
+                        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                    }
+                    else{
+                        Toast.makeText(getApplicationContext(), "Unable to save user info", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+}
     private void isLoading(boolean bool){
         if (bool){
             binding.loginBtn.setVisibility(View.GONE);

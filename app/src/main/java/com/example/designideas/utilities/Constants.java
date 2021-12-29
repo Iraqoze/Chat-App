@@ -13,6 +13,7 @@ public class Constants {
     public static final String KEY_PREFERENCE_NAME="chatAppPreference";
     public static  final String KEY_IS_SIGNED_IN="isSignedIn";
     public static final String KEY_USER_ID="userId";
+    public static final String KEY_MAUTH_ID="mAuthId";
     public  static final String KEY_IMAGE="image";
     public  static final String KEY_FCM_TOKEN="fcmToken";
     public static final String KEY_USER="user";
@@ -42,6 +43,7 @@ public class Constants {
             remoteMessageHeaders.put(KEY_REMOTE_MSG_AUTHORIZATION,BuildConfig.API_KEY_AUTH);
             remoteMessageHeaders.put(KEY_REMOTE_MSG_CONTENT_TYPE,"application/json");
         }
+
         return remoteMessageHeaders;
     }
 

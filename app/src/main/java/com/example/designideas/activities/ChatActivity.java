@@ -176,7 +176,7 @@ private Boolean isReceiverAvailable = false;
                     message.dateObject=documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
                     messages.add(message);
                 }
-                Collections.sort(messages,(obj1,obj2)->obj1.dateObject.compareTo(obj2.dateObject));
+                Collections.sort(messages,(obj2,obj1)->obj2.dateObject.compareTo(obj1.dateObject));
                 if (count==0){
                     chatAdapter.notifyDataSetChanged();
                 }
@@ -280,17 +280,18 @@ private Boolean isReceiverAvailable = false;
                                         JSONArray results= responseJson.getJSONArray("results");
                                         if (responseJson.getInt("failure")==1){
                                             JSONObject error=(JSONObject) results.get(0);
-                                            showToast(error.getString("error"));
                                             return;
                                         }
                                     }
                                 }catch (JSONException e){
                                     e.printStackTrace();
                                 }
+                                System.out.println("TUMEFIKA HAPA");
                                 showToast("Notification Sent Successfully");
                             }
                             else{
                                showToast("Error: "+response.code());
+                                System.out.println("ERROR NI: "+response.message());
                             }
                     }
 

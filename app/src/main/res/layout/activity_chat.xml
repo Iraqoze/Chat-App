@@ -87,6 +87,7 @@
     android:text="Online"
     android:paddingStart="@dimen/_24sdp"
     android:paddingEnd="@dimen/_24sdp"
+    android:paddingBottom="@dimen/_4sdp"
     android:textColor="@color/white"
     android:textAlignment="center"
     android:background="@drawable/background_online"
